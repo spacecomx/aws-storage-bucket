@@ -1,4 +1,4 @@
-import * as cdk from 'aws-cdk-lib';
+import * as cdk from "aws-cdk-lib";
 
 /**
  * Configuration interface for storage bucket settings
@@ -8,25 +8,43 @@ export interface StorageBucketConfig {
    * Name of the bucket (optional, will be auto-generated if not provided)
    */
   bucketName?: string;
-  
+
   /**
    * Removal policy for the bucket
    * @default RemovalPolicy.RETAIN for production, RemovalPolicy.DESTROY otherwise
    */
   removalPolicy?: cdk.RemovalPolicy;
-  
+
   /**
    * Enable versioning for the bucket
    * @default true
    */
   versioned?: boolean;
-  
+
   /**
    * Enable server-side encryption
    * @default true
    */
   encrypted?: boolean;
-  
+
+  /**
+   * Enable S3 access logging
+   * @default true for production
+   */
+  enableAccessLogging?: boolean;
+
+  /**
+   * Enable CloudWatch monitoring and alarms
+   * @default true for production
+   */
+  enableMonitoring?: boolean;
+
+  /**
+   * Enable EventBridge notifications for bucket events
+   * @default false
+   */
+  enableEventNotifications?: boolean;
+
   /**
    * Intelligent tiering configuration
    */
@@ -36,20 +54,20 @@ export interface StorageBucketConfig {
      * @default true
      */
     enabled: boolean;
-    
+
     /**
      * Days after which objects are moved to archive access tier
      * @default 90
      */
     archiveAccessTierDays: number;
-    
+
     /**
      * Days after which objects are moved to deep archive access tier
      * @default 180
      */
     deepArchiveAccessTierDays: number;
   };
-  
+
   /**
    * Lifecycle rules configuration
    */
@@ -59,7 +77,7 @@ export interface StorageBucketConfig {
      * @default 30
      */
     transitionToIntelligentTieringDays: number;
-    
+
     /**
      * Days after which noncurrent versions expire
      * @default 90
@@ -74,15 +92,18 @@ export interface StorageBucketConfig {
 export const mediaStorageConfig: StorageBucketConfig = {
   versioned: true,
   encrypted: true,
+  enableAccessLogging: true,
+  enableMonitoring: true,
+  enableEventNotifications: false,
   intelligentTiering: {
     enabled: true,
     archiveAccessTierDays: 90,
-    deepArchiveAccessTierDays: 180
+    deepArchiveAccessTierDays: 180,
   },
   lifecycle: {
     transitionToIntelligentTieringDays: 30,
-    noncurrentVersionExpirationDays: 90
-  }
+    noncurrentVersionExpirationDays: 90,
+  },
 };
 
 /**
@@ -91,15 +112,18 @@ export const mediaStorageConfig: StorageBucketConfig = {
 export const documentStorageConfig: StorageBucketConfig = {
   versioned: true,
   encrypted: true,
+  enableAccessLogging: true,
+  enableMonitoring: true,
+  enableEventNotifications: false,
   intelligentTiering: {
     enabled: true,
-    archiveAccessTierDays: 90,  // Minimum required by AWS
-    deepArchiveAccessTierDays: 180
+    archiveAccessTierDays: 90, // Minimum required by AWS
+    deepArchiveAccessTierDays: 180,
   },
   lifecycle: {
     transitionToIntelligentTieringDays: 15,
-    noncurrentVersionExpirationDays: 60
-  }
+    noncurrentVersionExpirationDays: 60,
+  },
 };
 
 /**
@@ -108,15 +132,18 @@ export const documentStorageConfig: StorageBucketConfig = {
 export const logStorageConfig: StorageBucketConfig = {
   versioned: false,
   encrypted: true,
+  enableAccessLogging: false, // Log buckets shouldn't log to themselves
+  enableMonitoring: true,
+  enableEventNotifications: false,
   intelligentTiering: {
     enabled: true,
-    archiveAccessTierDays: 90,  // Minimum required by AWS
-    deepArchiveAccessTierDays: 180
+    archiveAccessTierDays: 90, // Minimum required by AWS
+    deepArchiveAccessTierDays: 180,
   },
   lifecycle: {
     transitionToIntelligentTieringDays: 7,
-    noncurrentVersionExpirationDays: 30
-  }
+    noncurrentVersionExpirationDays: 30,
+  },
 };
 
 /**
@@ -125,6 +152,6 @@ export const logStorageConfig: StorageBucketConfig = {
  * @returns The appropriate removal policy
  */
 export function getRemovalPolicy(environment?: string): cdk.RemovalPolicy {
-  const isProd = environment?.toLowerCase().includes('prod') ?? false;
+  const isProd = environment?.toLowerCase().includes("prod") ?? false;
   return isProd ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY;
 }
