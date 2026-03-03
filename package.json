@@ -1,6 +1,6 @@
 {
   "name": "@spacecomx/aws-storage-bucket",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "packageManager": "pnpm@10.11.0",
   "description": "AWS S3 bucket management for storage of media, document and log files.",
   "author": "Spacecomx, LLC",
