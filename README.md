@@ -75,6 +75,32 @@ pnpm build
 pnpm test
 ```
 
+## 🔁 GitHub Workflows (Minimal)
+
+This repository uses two lightweight GitHub Actions workflows:
+
+- **CI on Pull Requests** (`.github/workflows/ci.yml`)
+  - Runs `pnpm lint`, `pnpm typecheck`, and `pnpm test`
+  - Triggered on `pull_request` and `merge_group`
+- **Manual Version Bump PR** (`.github/workflows/version-bump-pr.yml`)
+  - Triggered manually via `workflow_dispatch`
+  - Supports `patch`, `minor`, `major`, `prerelease`, and `custom`
+  - Creates a pull request that updates `package.json` version metadata only
+
+### Recommended Branch Protection (2026)
+
+For your default branch, require these status checks before merge:
+
+- `lint`
+- `typecheck`
+- `test`
+
+Also enable:
+
+- Require pull request reviews before merging
+- Dismiss stale approvals when new commits are pushed
+- Require branches to be up to date before merging
+
 ## 🔧 Environment Variables
 
 The stack supports configuration through environment variables and CDK context variables.

@@ -1,0 +1,86 @@
+name: version-bump-pr
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: Version bump strategy
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+          - custom
+      custom_version:
+        description: Exact version (required only when bump_type is custom)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: version-bump-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          bump_type="${{ github.event.inputs.bump_type }}"
+          custom_version="${{ github.event.inputs.custom_version }}"
+
+          if [[ "$bump_type" == "custom" ]]; then
+            if [[ -z "$custom_version" ]]; then
+              echo "custom_version is required when bump_type=custom" >&2
+              exit 1
+            fi
+            npm version "$custom_version" --no-git-tag-version
+          else
+            npm version "$bump_type" --no-git-tag-version
+          fi
+
+          new_version=$(node -p "require('./package.json').version")
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/version-bump-v${{ steps.bump.outputs.new_version }}
+          commit-message: "chore(release): bump version to v${{ steps.bump.outputs.new_version }}"
+          title: "chore(release): bump version to v${{ steps.bump.outputs.new_version }}"
+          body: |
+            Automated version bump PR.
+
+            - Bump type: `${{ github.event.inputs.bump_type }}`
+            - New version: `v${{ steps.bump.outputs.new_version }}`
+
+            This PR only updates version metadata and does not publish to npm.
+          labels: |
+            chore
+            release
