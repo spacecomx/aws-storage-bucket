@@ -16,6 +16,7 @@ Enterprise-grade AWS CDK stack for deploying highly available, secure, and cost-
 - Automated security compliance checks with **cdk-nag**
 - Bucket policies preventing unencrypted uploads
 - S3 access logging for audit trails
+- **IAM-based access control** with users, groups, and policies
 
 ### 📊 Observability & Monitoring
 
@@ -525,6 +526,7 @@ npx cdk deploy -c bucketName=my-unique-bucket-name-12345
 
 ## 📖 Additional Documentation
 
+- [IAM Access Control Guide](docs/IAM_ACCESS_CONTROL.md) - Configure IAM users, groups, and permissions
 - [IMPROVEMENTS.md](IMPROVEMENTS.md) - Detailed list of 2026 enhancements
 - [AWS CDK Documentation](https://docs.aws.amazon.com/cdk/)
 - [S3 Best Practices](https://docs.aws.amazon.com/AmazonS3/latest/userguide/best-practices.html)

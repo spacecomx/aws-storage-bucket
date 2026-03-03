@@ -7,6 +7,7 @@ import {
   logStorageConfig,
   mediaStorageConfig,
 } from "../config/storage-bucket.config";
+import { BucketAccess, BucketAccessLevel } from "./constructs/bucket-access";
 import { BucketEventNotification } from "./constructs/bucket-event-notification";
 import { BucketMonitoring } from "./constructs/bucket-monitoring";
 import { BucketPolicy } from "./constructs/bucket-policy";
@@ -62,6 +63,11 @@ export class StorageBucketStack extends cdk.Stack {
    */
   public readonly eventNotification?: BucketEventNotification;
 
+  /**
+   * The IAM access control construct (if configured)
+   */
+  public readonly accessControl?: BucketAccess;
+
   constructor(scope: Construct, id: string, props?: StorageBucketStackProps) {
     super(scope, id, {
       ...props,
@@ -95,6 +101,23 @@ export class StorageBucketStack extends cdk.Stack {
           enabled: true,
         },
       );
+    }
+
+    // Create IAM access control if configured
+    if (config.accessControl && config.accessControl.length > 0) {
+      this.accessControl = new BucketAccess(this, "AccessControl", {
+        bucket: this.storageBucket.bucket,
+        environment: props?.environment || "dev",
+        accessConfigs: config.accessControl.map((ac) => ({
+          userName: ac.userName,
+          groupName: ac.groupName,
+          accessLevel: ac.accessLevel || BucketAccessLevel.READ_WRITE,
+          createAccessKeys: ac.createAccessKeys ?? false,
+          additionalPolicyStatements: ac.additionalPolicyStatements,
+          allowedPrefixes: ac.allowedPrefixes,
+          tags: ac.tags,
+        })),
+      });
     }
 
     this.defineOutputs(this.storageBucket);

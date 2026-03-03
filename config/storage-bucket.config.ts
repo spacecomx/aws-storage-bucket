@@ -1,4 +1,57 @@
 import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
+
+/**
+ * Access level for S3 bucket permissions
+ */
+export enum BucketAccessLevel {
+  READ_ONLY = "READ_ONLY",
+  READ_WRITE = "READ_WRITE",
+  FULL = "FULL",
+}
+
+/**
+ * IAM access configuration for a bucket user/group
+ */
+export interface IAMAccessConfig {
+  /**
+   * Name of the IAM user to create
+   */
+  userName: string;
+
+  /**
+   * Name of the IAM group to create
+   */
+  groupName: string;
+
+  /**
+   * Access level for the bucket
+   * @default BucketAccessLevel.READ_WRITE
+   */
+  accessLevel?: BucketAccessLevel;
+
+  /**
+   * Whether to create access keys for programmatic access
+   * @default false
+   */
+  createAccessKeys?: boolean;
+
+  /**
+   * Additional IAM policy statements
+   */
+  additionalPolicyStatements?: iam.PolicyStatement[];
+
+  /**
+   * Allowed object prefixes (paths) within the bucket
+   * @example ['images/', 'thumbnails/']
+   */
+  allowedPrefixes?: string[];
+
+  /**
+   * Tags for IAM resources
+   */
+  tags?: Record<string, string>;
+}
 
 /**
  * Configuration interface for storage bucket settings
@@ -44,6 +97,13 @@ export interface StorageBucketConfig {
    * @default false
    */
   enableEventNotifications?: boolean;
+
+  /**
+   * IAM access control configurations
+   * Define users, groups, and permissions for bucket access
+   * @default []
+   */
+  accessControl?: IAMAccessConfig[];
 
   /**
    * Intelligent tiering configuration
